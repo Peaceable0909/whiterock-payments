@@ -179,21 +179,36 @@ function doPost(e) {
 function setupSheet() {
   getPaymentsSheet();
   const cs = getCounselorsSheet();
-  // Add default counselors if sheet is empty
+  // Add counselors if sheet is empty
   if (cs.getLastRow() < 2) {
-    cs.getRange(2,1,3,1).setValues([["Jane Smith"],["Mark Johnson"],["Sarah Davis"]]);
+    cs.getRange(2,1,15,1).setValues([
+      ["Mrs Lydia"],
+      ["Michael"],
+      ["Zainab"],
+      ["Peaceable"],
+      ["Trust"],
+      ["Mr Anya"],
+      ["Jude Scott"],
+      ["Praise"],
+      ["Mrs Gladys"],
+      ["Feranmi"],
+      ["Mr Adegoke"],
+      ["Robert"],
+      ["Mr Abraham"],
+      ["Cherish"],
+      ["Mrs Oluwo"]
+    ]);
   }
   SpreadsheetApp.getUi().alert("✅ Setup complete! Edit the Counselors tab to add/remove counselors.");
 }
 
 function setupSampleData() {
   const sample = [
-    ["Jane Smith","Alice Brown","Lincoln High / Cook County","April 2026","Paid",150,"2026-04-03"],
-    ["Jane Smith","Bob Green","Lincoln High / Cook County","April 2026","Paid",150,"2026-04-10"],
-    ["Mark Johnson","Frank Lee","Riverside HS / Lake County","April 2026","Paid",200,"2026-04-05"],
-    ["Mark Johnson","Grace Kim","Riverside HS / Lake County","May 2026","Paid",200,"2026-05-08"],
-    ["Sarah Davis","Karen Wu","Northside HS / Cook County","April 2026","Paid",175,"2026-04-07"],
-    ["Sarah Davis","Liam Chen","Westfield MS / Will County","May 2026","Pending",160,""],
+    ["Mrs Lydia",   "Sample Student 1","Lincoln High / Cook County",  "April 2026","Paid",   150,"2026-04-03"],
+    ["Michael",     "Sample Student 2","Riverside HS / Lake County",  "April 2026","Paid",   200,"2026-04-05"],
+    ["Zainab",      "Sample Student 3","Northside HS / Cook County",  "May 2026",  "Paid",   175,"2026-05-07"],
+    ["Peaceable",   "Sample Student 4","Westfield MS / Will County",  "May 2026",  "Pending",160,""],
+    ["Trust",       "Sample Student 5","Jefferson MS / DuPage County","April 2026","Paid",   120,"2026-04-14"],
   ];
   const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
   const rows = sample.map(r => [...r, now]);
