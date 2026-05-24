@@ -307,25 +307,23 @@ window.addEventListener("DOMContentLoaded", async () => {
   await loadCounselors();
 });
 
+// ── FALLBACK COUNSELORS (used if sheet not set up yet) ───────
+const FALLBACK_COUNSELORS = [
+  "Mrs Lydia","Michael","Zainab","Peaceable","Trust",
+  "Mr Anya","Jude Scott","Praise","Mrs Gladys","Feranmi",
+  "Mr Adegoke","Robert","Mr Abraham","Cherish","Mrs Oluwo"
+];
+
 // ── LOAD COUNSELORS FROM SHEET ───────────────────────────────
 async function loadCounselors() {
   try {
     const res  = await fetch(`${SCRIPT_URL}?action=getCounselors`);
     const data = await res.json();
-    counselors = data.counselors || [];
+    counselors = (data.counselors && data.counselors.length > 0)
+      ? data.counselors
+      : FALLBACK_COUNSELORS;
   } catch (_) {
-    // Fallback: hardcode if Apps Script unreachable
-    counselors = [];
-  }
-
-  // If sheet has no counselors yet, show a friendly message
-  if (counselors.length === 0) {
-    document.getElementById("loadingState").innerHTML =
-      `<p style="color:var(--muted);text-align:center;font-size:.9rem">
-        No counselors found in the sheet.<br>
-        Add names to the <strong>Counselors</strong> tab or run <code>setupSheet()</code> in Apps Script.
-      </p>`;
-    return;
+    counselors = FALLBACK_COUNSELORS;
   }
 
   document.getElementById("loadingState").style.display = "none";
