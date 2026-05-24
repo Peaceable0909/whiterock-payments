@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>White Rock – Payment Portal</title>
+
+<!-- WhatsApp / OG Preview -->
+<meta property="og:type"         content="website">
+<meta property="og:title"        content="White Rock – Student Payment Portal">
+<meta property="og:description"  content="Submit and manage student payment records for April & May 2026.">
+<meta property="og:image"        content="https://drive.google.com/uc?export=view&id=1-USEbmmuK1ty18R6dqJqVGuk9vcQv-dH">
+<meta property="og:image:width"  content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name"    content="White Rock">
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:image"       content="https://drive.google.com/uc?export=view&id=1-USEbmmuK1ty18R6dqJqVGuk9vcQv-dH">
+
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --red:       #d01c1c;
+  --red-dark:  #a81515;
+  --red-light: #fdf0f0;
+  --navy:      #1e2f6e;
+  --navy-dark: #131f4a;
+  --white:     #ffffff;
+  --bg:        #f2f4f8;
+  --border:    #dde2ef;
+  --muted:     #6b7494;
+  --ink:       #111827;
+  --paid:      #15803d;
+  --pending:   #b45309;
+  --shadow:    0 8px 40px rgba(30,47,110,0.14);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; padding: 36px 20px 80px;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: repeating-linear-gradient(-55deg, transparent, transparent 40px, rgba(30,47,110,0.03) 40px, rgba(30,47,110,0.03) 41px);
+}
+
+/* ── CARD ── */
+.card {
+  position: relative; z-index: 1;
+  background: var(--white); border-radius: 22px;
+  box-shadow: var(--shadow);
+  width: 100%; max-width: 780px; overflow: hidden;
+  animation: rise 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* ── HEADER ── */
+.card-head { background: var(--red); position: relative; overflow: hidden; }
+.card-head::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+.card-head::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: rgba(255,255,255,0.07); pointer-events: none;
+}
+.head-inner { position: relative; z-index: 1; padding: 24px 32px 20px; }
+.logo-img { height: 48px; width: auto; max-width: 200px; object-fit: contain; margin-bottom: 14px; display: block; border-radius: 5px; }
+.logo-fallback {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 1.9rem; font-weight: 800;
+  display: none; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.logo-fallback .lw { color: #fff; }
+.logo-fallback .ln { color: var(--navy); background: #fff; padding: 2px 10px 2px 8px; border-radius: 6px; }
+
+/* ── ROLE PICKER ── */
+.role-strip {
+  background: var(--navy); display: flex;
+}
+.role-btn {
+  flex: 1; padding: 14px 0; border: none; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.45); background: transparent;
+  border-bottom: 3px solid transparent;
+  transition: all 0.18s;
+}
+.role-btn.active { color: #fff; border-bottom-color: var(--red); }
+
+/* ── BODY ── */
+.card-body { padding: 28px 32px 34px; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── FORM FIELDS ── */
+.top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+@media(max-width:500px){ .top-row { grid-template-columns: 1fr; } }
+
+.field { margin-bottom: 18px; }
+label {
+  display: block; font-size: 0.71rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted); margin-bottom: 6px;
+}
+input, select, textarea {
+  width: 100%; background: var(--bg);
+  border: 1.5px solid var(--border); border-radius: 9px;
+  padding: 11px 13px;
+  font-family: 'Barlow', sans-serif; font-size: 0.93rem;
+  color: var(--ink); outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  -webkit-appearance: none;
+}
+input::placeholder, textarea::placeholder { color: #b0b8cc; }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--navy); background: #fff;
+  box-shadow: 0 0 0 3px rgba(30,47,110,0.1);
+}
+input.error { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(208,28,28,0.1) !important; }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7494' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; cursor: pointer;
+}
+
+/* ── SECTION LABEL ── */
+.section-label { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.section-label span {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem;
+  font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--navy); white-space: nowrap;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+/* ── STUDENT PROFILE CARD ── */
+.profile-card {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 22px;
+  display: flex; align-items: center; gap: 16px;
+}
+.profile-avatar {
+  width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+  background: var(--navy); display: grid; place-items: center;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem;
+  font-weight: 800; color: #fff;
+}
+.profile-info { flex: 1; }
+.profile-name { font-weight: 700; font-size: 1rem; line-height: 1.3; }
+.profile-meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+.btn-edit-profile {
+  padding: 7px 16px; border-radius: 8px;
+  border: 1.5px solid var(--navy); background: transparent;
+  font-family: 'Barlow', sans-serif; font-size: 0.82rem; font-weight: 700;
+  color: var(--navy); cursor: pointer; transition: all .15s; flex-shrink: 0;
+}
+.btn-edit-profile:hover { background: var(--navy); color: #fff; }
+
+/* ── STUDENT TABLE ── */
+.student-table { width: 100%; border-collapse: collapse; }
+.student-table thead tr { background: var(--navy); }
+.student-table thead th {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);
+  padding: 9px 10px; text-align: left;
+}
+.student-table thead th:last-child { text-align: center; width: 40px; }
+.student-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+.student-table tbody tr:last-child { border-bottom: none; }
+.student-table tbody tr:hover { background: #f8f9fc; }
+.student-table td { padding: 8px 6px; vertical-align: middle; }
+.student-table td:first-child { padding-left: 2px; }
+.student-table input, .student-table select { padding: 8px 10px; font-size: 0.88rem; border-radius: 7px; background: var(--bg); }
+.student-table input:focus, .student-table select:focus { background: #fff; }
+.amt-wrap { position: relative; }
+.amt-prefix { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.88rem; font-weight: 700; color: var(--navy); pointer-events: none; }
+.amt-wrap input { padding-left: 22px; font-weight: 600; color: var(--navy); }
+.mini-status { display: flex; gap: 4px; }
+.mini-pill { flex: 1; padding: 6px 0; border-radius: 6px; border: 1.5px solid var(--border); background: var(--bg); font-family: 'Barlow', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; text-align: center; color: var(--muted); transition: all .13s; white-space: nowrap; user-select: none; }
+.mini-pill.sel-paid    { background: #f0faf4; border-color: var(--paid);    color: var(--paid); }
+.mini-pill.sel-pending { background: #fffbf0; border-color: var(--pending); color: var(--pending); }
+.btn-del { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; color: var(--muted); font-size: 1rem; cursor: pointer; display: grid; place-items: center; transition: all .13s; margin: auto; }
+.btn-del:hover { background: var(--red-light); border-color: var(--red); color: var(--red); }
+
+/* ── ADD ROW BTN ── */
+.btn-add-row { margin-top: 12px; width: 100%; border: 2px dashed var(--border); border-radius: 9px; padding: 11px; background: transparent; font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; transition: border-color .15s, color .15s, background .15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.btn-add-row:hover { border-color: var(--navy); color: var(--navy); background: #f0f3fc; }
+
+/* ── SUMMARY BAR ── */
+.summary-bar { margin-top: 20px; background: var(--navy); border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.sum-item { display: flex; flex-direction: column; gap: 2px; }
+.sum-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); }
+.sum-val   { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 800; color: #fff; }
+.sum-val.gold { color: #f0c040; }
+.sum-sep { width: 1px; height: 36px; background: rgba(255,255,255,0.12); }
+
+/* ── SUBMIT ── */
+.btn-submit { width: 100%; margin-top: 22px; background: var(--red); border: none; border-radius: 10px; padding: 15px 0; font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; transition: background .15s, transform .1s, box-shadow .15s; box-shadow: 0 4px 18px rgba(208,28,28,0.35); }
+.btn-submit:hover { background: var(--red-dark); transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit.loading { opacity: 0.65; pointer-events: none; }
+.btn-submit svg { width: 18px; height: 18px; fill: #fff; flex-shrink: 0; }
+.btn-secondary { width: 100%; margin-top: 12px; background: transparent; border: 2px solid var(--navy); border-radius: 10px; padding: 12px 0; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); cursor: pointer; transition: background .15s, color .15s; }
+.btn-secondary:hover { background: var(--navy); color: #fff; }
+
+/* ── SUCCESS ── */
+.success-screen { display: none; text-align: center; padding: 50px 36px; animation: rise .4s ease both; }
+.success-screen.show { display: block; }
+.success-ring { width: 76px; height: 76px; border-radius: 50%; margin: 0 auto 20px; background: var(--red-light); border: 2.5px solid var(--red); display: grid; place-items: center; }
+.success-ring svg { width: 34px; height: 34px; }
+.success-screen h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--navy); margin-bottom: 8px; }
+.success-screen p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+.success-chips { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.success-chip { background: var(--navy); color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; padding: 8px 20px; border-radius: 9px; letter-spacing: 0.04em; }
+.success-chip.red { background: var(--red); }
+.btn-another { display: inline-block; margin-top: 22px; border: 2px solid var(--navy); border-radius: 9px; padding: 10px 26px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--navy); cursor: pointer; background: transparent; transition: background .15s, color .15s; }
+.btn-another:hover { background: var(--navy); color: #fff; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(70px); background: var(--navy); color: #fff; border-radius: 10px; padding: 12px 22px; font-size: 0.86rem; font-weight: 600; box-shadow: var(--shadow); z-index: 9999; transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), opacity 0.3s; opacity: 0; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.error { background: var(--red); }
+.toast.success { background: var(--paid); }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 24px; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 18px; width: 100%; max-width: 480px; box-shadow: 0 24px 80px rgba(0,0,0,0.3); overflow: hidden; animation: rise .3s ease both; }
+.modal-head { background: var(--navy); padding: 20px 26px; display: flex; align-items: center; justify-content: space-between; }
+.modal-head h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #fff; }
+.modal-close { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.3); background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 1.1rem; display: grid; place-items: center; transition: all .15s; }
+.modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.modal-body { padding: 24px 26px 28px; }
+
+.req { color: var(--red); }
+@keyframes rise { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+@keyframes rowIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="card" id="mainCard">
+
+  <!-- HEADER -->
+  <div class="card-head">
+    <div class="head-inner">
+      <img src="https://drive.google.com/uc?export=view&id=1QjC9QTWmCShWTkubVtUkD4UwwF95A4QF"
+           alt="White Rock" class="logo-img"
+           onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
+      <div class="logo-fallback" id="logoFallback">
+        <span class="lw">WHITE</span><span class="ln">ROCK</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLE TABS -->
+  <div class="role-strip">
+    <button class="role-btn active" id="tab-student"   onclick="switchRole('student')">🎓 I'm a Student</button>
+    <button class="role-btn"        id="tab-counselor" onclick="switchRole('counselor')">📋 I'm a Counselor</button>
+  </div>
+
+  <!-- ══════════ STUDENT VIEW ══════════ -->
+  <div class="card-body">
+  <div class="view active" id="view-student">
+
+    <!-- Profile display -->
+    <div id="profileCard" style="display:none">
+      <div class="profile-card">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profileName">—</div>
+          <div class="profile-meta" id="profileMeta">—</div>
+        </div>
+        <button class="btn-edit-profile" onclick="openProfileModal()">✏️ Edit</button>
+      </div>
+    </div>
+
+    <!-- No profile yet -->
+    <div id="noProfile">
+      <div class="section-label"><span>Your Details</span></div>
+      <p style="color:var(--muted);font-size:0.88rem;margin-bottom:18px;">Enter your details below so your counselor can track your payment.</p>
+      <div class="top-row">
+        <div class="field">
+          <label>Your Full Name <span class="req">*</span></label>
+          <input id="s-name" type="text" placeholder="e.g. Alice Brown">
+        </div>
+        <div class="field">
+          <label>Your Counselor <span class="req">*</span></label>
+          <select id="s-counselor"><option value="">Loading…</option></select>
+        </div>
+      </div>
+      <div class="top-row">
+        <div class="field">
+          <label>School <span class="req">*</span></label>
+          <input id="s-school" type="text" placeholder="e.g. Lincoln High">
+        </div>
+        <div class="field">
+          <label>County <span class="req">*</span></label>
+          <input id="s-county" type="text" placeholder="e.g. Cook County">
+        </div>
+      </div>
+      <button class="btn-submit" onclick="saveStudentProfile()">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        Save My Details
+      </button>
+    </div>
+
+    <!-- Student success -->
+    <div class="success-screen" id="studentSuccess">
+      <div class="success-ring">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d01c1c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Profile Saved!</h2>
+      <p id="studentSuccessMsg"></p>
+      <button class="btn-another" onclick="resetStudentSuccess()">Update Again</button>
+    </div>
+
+  </div>
+
+  <!-- ══════════ COUNSELOR VIEW ══════════ -->
+  <div class="view" id="view-counselor">
+
+    <div id="counselorForm">
+      <div class="top-row">
+        <div class="field">
+          <label>Your Name <span class="req">*</span></label>
+          <select id="f-counselor"><option value="">Loading…</option></select>
+        </div>
+        <div class="field">
+          <label>Month <span class="req">*</span></label>
+          <select id="f-month">
+            <option value="April 2026">April 2026</option>
+            <option value="May 2026">May 2026</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label"><span>Students</span></div>
+      <div style="overflow-x:auto;">
+        <table class="student-table" id="studentTable">
+          <thead>
+            <tr>
+              <th style="width:28%">Student Name <span class="req">*</span></th>
+              <th style="width:30%">School / County <span class="req">*</span></th>
+              <th style="width:14%">Amount <span class="req">*</span></th>
+              <th style="width:20%">Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="studentRows"></tbody>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addRow()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Another Student
+      </button>
+
+      <div class="summary-bar">
+        <div class="sum-item"><div class="sum-label">Students</div><div class="sum-val" id="sumCount">0</div></div>
+        <div class="sum-sep"></div>
+        <div class="sum-item"><div class="sum-label">Total</div><div class="sum-val gold" id="sumAmount">$0.00</div></div>
+        <div class="sum-sep"></div>
+        <div class="sum-item"><div class="sum-label">Paid</div><div class="sum-val" id="sumPaid" style="color:#4ade80">0</div></div>
+        <div class="sum-sep"></div>
+        <div class="sum-item"><div class="sum-label">Pending</div><div class="sum-val" id="sumPending" style="color:#fbbf24">0</div></div>
+      </div>
+
+      <button class="btn-submit" id="submitBtn" onclick="submitAll()">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        Submit All Payments
+      </button>
+    </div>
+
+    <!-- Counselor success -->
+    <div class="success-screen" id="counselorSuccess">
+      <div class="success-ring">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d01c1c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Payments Recorded!</h2>
+      <p id="counselorSuccessMsg"></p>
+      <div class="success-chips" id="counselorSuccessChips"></div>
+      <br>
+      <button class="btn-another" onclick="resetCounselorForm()">Submit More</button>
+    </div>
+  </div>
+  </div><!-- /card-body -->
+
+</div><!-- /card -->
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Edit Your Details</h3>
+      <button class="modal-close" onclick="closeProfileModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Full Name <span class="req">*</span></label>
+        <input id="m-name" type="text" placeholder="Your full name">
+      </div>
+      <div class="field">
+        <label>Your Counselor <span class="req">*</span></label>
+        <select id="m-counselor"><option value="">Select counselor</option></select>
+      </div>
+      <div class="top-row" style="margin-bottom:0">
+        <div class="field">
+          <label>School</label>
+          <input id="m-school" type="text" placeholder="School name">
+        </div>
+        <div class="field">
+          <label>County</label>
+          <input id="m-county" type="text" placeholder="County name">
+        </div>
+      </div>
+      <button class="btn-submit" style="margin-top:20px" onclick="updateStudentProfile()">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE CONFIG ──────────────────────────────────────────
+const SUPABASE_URL  = "https://awmyavwhqklfuctczkuu.supabase.co";
+const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3bXlhdndocWtsZnVjdGN6a3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1ODIyNDgsImV4cCI6MjA5NTE1ODI0OH0.yNLydUv2T8vsjy06SmvzBHUAYoCYK52GncY_jH2gHJc";
+const APPS_SCRIPT   = "https://script.google.com/macros/s/AKfycby6tskzvfGmW5zkoRZgOyRJfrc4eSYspaAkTUtYm61y_8Bu-jl3QLoC94U9oTM7K_N6SQ/exec";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── STATE ───────────────────────────────────────────────────
+let counselors   = [];
+let rowId        = 0;
+let currentStudentId = null;
+
+// ── INIT ────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", async () => {
+  await loadCounselors();
+  addRow();
+  // Check localStorage for returning student
+  const saved = localStorage.getItem("wr_student_id");
+  if (saved) {
+    currentStudentId = saved;
+    await loadStudentProfile(saved);
+  }
+});
+
+// ── LOAD COUNSELORS ─────────────────────────────────────────
+async function loadCounselors() {
+  const { data, error } = await sb.from("wr_counselors").select("id,name").order("name");
+  if (error) { showToast("Could not load counselors", "error"); return; }
+  counselors = data;
+
+  const opts = data.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  ["s-counselor","f-counselor","m-counselor"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<option value="">Select counselor…</option>` + opts;
+  });
+}
+
+// ── ROLE SWITCH ─────────────────────────────────────────────
+function switchRole(role) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("view-" + role).classList.add("active");
+  document.getElementById("tab-"  + role).classList.add("active");
+}
+
+// ══════════════ STUDENT PROFILE ══════════════════════════════
+
+async function saveStudentProfile() {
+  const name        = document.getElementById("s-name").value.trim();
+  const counselorId = document.getElementById("s-counselor").value;
+  const school      = document.getElementById("s-school").value.trim();
+  const county      = document.getElementById("s-county").value.trim();
+
+  if (!name)        { showToast("Please enter your name", "error"); return; }
+  if (!counselorId) { showToast("Please select your counselor", "error"); return; }
+  if (!school)      { showToast("Please enter your school", "error"); return; }
+
+  const { data, error } = await sb.from("wr_students").insert([{
+    full_name: name, counselor_id: counselorId, school, county
+  }]).select().single();
+
+  if (error) { showToast("Error saving: " + error.message, "error"); return; }
+
+  currentStudentId = data.id;
+  localStorage.setItem("wr_student_id", data.id);
+  showStudentSuccess(data, counselorId);
+}
+
+async function loadStudentProfile(studentId) {
+  const { data, error } = await sb
+    .from("wr_students")
+    .select("*, wr_counselors(name)")
+    .eq("id", studentId)
+    .single();
+
+  if (error || !data) { localStorage.removeItem("wr_student_id"); return; }
+  renderProfileCard(data);
+}
+
+function renderProfileCard(data) {
+  const initials  = data.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  const counselor = data.wr_counselors?.name || "—";
+  document.getElementById("profileAvatar").textContent = initials;
+  document.getElementById("profileName").textContent   = data.full_name;
+  document.getElementById("profileMeta").textContent   = `${counselor} · ${data.school || ""}${data.county ? " / " + data.county : ""}`;
+  document.getElementById("profileCard").style.display = "block";
+  document.getElementById("noProfile").style.display   = "none";
+}
+
+function showStudentSuccess(data, counselorId) {
+  const counselorName = counselors.find(c => c.id === counselorId)?.name || "your counselor";
+  document.getElementById("studentSuccessMsg").textContent =
+    `Hi ${data.full_name}! Your details have been saved under ${counselorName}.`;
+  document.getElementById("noProfile").style.display        = "none";
+  document.getElementById("studentSuccess").classList.add("show");
+  renderProfileCard({ ...data, wr_counselors: { name: counselorName } });
+}
+
+function resetStudentSuccess() {
+  document.getElementById("studentSuccess").classList.remove("show");
+  if (currentStudentId) {
+    document.getElementById("noProfile").style.display   = "none";
+    document.getElementById("profileCard").style.display = "block";
+  } else {
+    document.getElementById("noProfile").style.display = "block";
+  }
+}
+
+// ── EDIT PROFILE MODAL ──────────────────────────────────────
+async function openProfileModal() {
+  if (!currentStudentId) return;
+  const { data } = await sb.from("wr_students").select("*").eq("id", currentStudentId).single();
+  if (data) {
+    document.getElementById("m-name").value      = data.full_name  || "";
+    document.getElementById("m-school").value    = data.school     || "";
+    document.getElementById("m-county").value    = data.county     || "";
+    document.getElementById("m-counselor").value = data.counselor_id || "";
+  }
+  document.getElementById("profileModal").classList.add("open");
+}
+
+function closeProfileModal() {
+  document.getElementById("profileModal").classList.remove("open");
+}
+
+async function updateStudentProfile() {
+  const name        = document.getElementById("m-name").value.trim();
+  const counselorId = document.getElementById("m-counselor").value;
+  const school      = document.getElementById("m-school").value.trim();
+  const county      = document.getElementById("m-county").value.trim();
+
+  if (!name)        { showToast("Name is required", "error"); return; }
+  if (!counselorId) { showToast("Please select a counselor", "error"); return; }
+
+  const { data, error } = await sb.from("wr_students")
+    .update({ full_name: name, counselor_id: counselorId, school, county })
+    .eq("id", currentStudentId)
+    .select("*, wr_counselors(name)")
+    .single();
+
+  if (error) { showToast("Error updating: " + error.message, "error"); return; }
+
+  closeProfileModal();
+  renderProfileCard(data);
+  showToast("Profile updated!", "success");
+}
+
+// ══════════════ COUNSELOR PAYMENTS ════════════════════════════
+
+function addRow() {
+  const id    = ++rowId;
+  const tbody = document.getElementById("studentRows");
+  const tr    = document.createElement("tr");
+  tr.id = "row-" + id;
+  tr.style.animation = "rowIn 0.25s ease both";
+  tr.innerHTML = `
+    <td><input type="text"   id="r${id}-student" placeholder="Student name"    oninput="updateSummary()"></td>
+    <td><input type="text"   id="r${id}-school"  placeholder="School / County" oninput="updateSummary()"></td>
+    <td><div class="amt-wrap"><span class="amt-prefix">$</span>
+        <input type="number" id="r${id}-amount"  placeholder="0.00" min="0.01" step="0.01" oninput="updateSummary()">
+    </div></td>
+    <td><div class="mini-status">
+        <div class="mini-pill sel-paid"    id="r${id}-paid"    onclick="setRowStatus(${id},'Paid')">✓ Paid</div>
+        <div class="mini-pill"             id="r${id}-pending" onclick="setRowStatus(${id},'Pending')">⏳ Pending</div>
+    </div></td>
+    <td><button class="btn-del" onclick="removeRow(${id})">×</button></td>`;
+  tbody.appendChild(tr);
+  tr.querySelector("input").focus();
+  updateSummary();
+}
+
+function removeRow(id) {
+  if (document.querySelectorAll("#studentRows tr").length === 1) {
+    showToast("At least one row is required", "error"); return;
+  }
+  document.getElementById("row-" + id)?.remove();
+  updateSummary();
+}
+
+function setRowStatus(id, val) {
+  document.getElementById(`r${id}-paid`).className    = "mini-pill" + (val==="Paid"    ? " sel-paid"    : "");
+  document.getElementById(`r${id}-pending`).className = "mini-pill" + (val==="Pending" ? " sel-pending" : "");
+  updateSummary();
+}
+
+function getRowStatus(id) {
+  return document.getElementById(`r${id}-paid`).classList.contains("sel-paid") ? "Paid" : "Pending";
+}
+
+function getRowIds() {
+  return [...document.querySelectorAll("#studentRows tr")].map(tr => parseInt(tr.id.replace("row-","")));
+}
+
+function collectRows() {
+  return getRowIds().map(id => ({
+    student : document.getElementById(`r${id}-student`)?.value.trim() || "",
+    school  : document.getElementById(`r${id}-school`)?.value.trim()  || "",
+    amount  : parseFloat(document.getElementById(`r${id}-amount`)?.value) || 0,
+    status  : getRowStatus(id),
+  }));
+}
+
+function updateSummary() {
+  const ids = getRowIds();
+  let total=0, paid=0, pending=0;
+  ids.forEach(id => {
+    const amt = parseFloat(document.getElementById(`r${id}-amount`)?.value) || 0;
+    total += amt;
+    getRowStatus(id)==="Paid" ? paid++ : pending++;
+  });
+  document.getElementById("sumCount").textContent   = ids.length;
+  document.getElementById("sumAmount").textContent  = "$" + total.toFixed(2);
+  document.getElementById("sumPaid").textContent    = paid;
+  document.getElementById("sumPending").textContent = pending;
+}
+
+function validateCounselorForm() {
+  let ok = true;
+  const counselorEl = document.getElementById("f-counselor");
+  if (!counselorEl.value) { counselorEl.classList.add("error"); ok = false; }
+  else counselorEl.classList.remove("error");
+
+  collectRows().forEach((r, i) => {
+    const id = getRowIds()[i];
+    ["student","school","amount"].forEach(field => {
+      const el = document.getElementById(`r${id}-${field}`);
+      const bad = field === "amount" ? (!r.amount || r.amount <= 0) : !r[field];
+      if (bad) { el.classList.add("error"); ok = false; }
+      else el.classList.remove("error");
+    });
+  });
+  if (!ok) showToast("Please fill in all required fields", "error");
+  return ok;
+}
+
+async function submitAll() {
+  if (!validateCounselorForm()) return;
+
+  const counselorId   = document.getElementById("f-counselor").value;
+  const counselorName = counselors.find(c => c.id === counselorId)?.name || "";
+  const month         = document.getElementById("f-month").value;
+  const rows          = collectRows();
+  const today         = new Date().toISOString().split("T")[0];
+
+  const btn = document.getElementById("submitBtn");
+  btn.classList.add("loading"); btn.textContent = "Saving…";
+
+  try {
+    // 1. Save to Supabase
+    const payments = rows.map(r => ({
+      counselor_id : counselorId,
+      student_name : r.student,
+      school       : r.school,
+      month,
+      amount       : r.amount,
+      status       : r.status,
+      date_paid    : today,
+    }));
+
+    const { error: sbErr } = await sb.from("wr_payments").insert(payments);
+    if (sbErr) throw new Error(sbErr.message);
+
+    // 2. Also sync to Google Sheet
+    try {
+      await fetch(APPS_SCRIPT, {
+        method : "POST",
+        body   : JSON.stringify({ action:"addBatch", payments: rows.map(r => ({
+          counselor: counselorName, month,
+          student: r.student, school: r.school,
+          amount: r.amount, status: r.status, datePaid: today
+        }))}),
+      });
+    } catch(_) { /* sheet sync is best-effort */ }
+
+    showCounselorSuccess(counselorName, month, rows);
+  } catch(err) {
+    showToast("Error: " + err.message, "error");
+    btn.classList.remove("loading");
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> Submit All Payments`;
+  }
+}
+
+function showCounselorSuccess(counselorName, month, rows) {
+  const total   = rows.reduce((s,r) => s+r.amount, 0);
+  const paid    = rows.filter(r => r.status==="Paid").length;
+  const pending = rows.filter(r => r.status==="Pending").length;
+
+  document.getElementById("counselorForm").style.display = "none";
+  document.getElementById("counselorSuccess").classList.add("show");
+  document.getElementById("counselorSuccessMsg").textContent =
+    `${rows.length} student payment${rows.length>1?"s":""} for ${month} recorded under ${counselorName}.`;
+  document.getElementById("counselorSuccessChips").innerHTML = [
+    `<div class="success-chip">${rows.length} Student${rows.length>1?"s":""}</div>`,
+    `<div class="success-chip red">$${total.toFixed(2)}</div>`,
+    paid    ? `<div class="success-chip">${paid} Paid</div>`    : "",
+    pending ? `<div class="success-chip" style="background:var(--pending)">${pending} Pending</div>` : "",
+  ].join("");
+}
+
+function resetCounselorForm() {
+  document.getElementById("counselorSuccess").classList.remove("show");
+  document.getElementById("counselorForm").style.display = "block";
+  document.getElementById("f-counselor").value = "";
+  document.getElementById("studentRows").innerHTML = "";
+  rowId = 0; addRow();
+  const btn = document.getElementById("submitBtn");
+  btn.classList.remove("loading");
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> Submit All Payments`;
+}
+
+// ── TOAST ───────────────────────────────────────────────────
+function showToast(msg, type="") {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
+</script>
+</body>
+</html>
