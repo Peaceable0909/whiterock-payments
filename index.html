@@ -5,18 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WhiteRock – Payment Portal</title>
 
-<!-- OG / WhatsApp Preview -->
 <meta property="og:type"         content="website">
 <meta property="og:title"        content="White Rock – Student Payment Portal">
 <meta property="og:description"  content="Submit student payment records for April & May 2026.">
-<meta property="og:image"        content="https://whiterock-payments.vercel.app/assets/og-image.jpg">
+<meta property="og:image"        content="https://drive.google.com/uc?export=view&id=1-USEbmmuK1ty18R6dqJqVGuk9vcQv-dH">
 <meta property="og:image:width"  content="1080">
 <meta property="og:image:height" content="1080">
 <meta property="og:site_name"    content="White Rock">
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:title"       content="White Rock – Student Payment Portal">
 <meta name="twitter:description" content="Submit student payment records for April & May 2026.">
-<meta name="twitter:image"       content="https://whiterock-payments.vercel.app/assets/og-image.jpg">
+<meta name="twitter:image"       content="https://drive.google.com/uc?export=view&id=1-USEbmmuK1ty18R6dqJqVGuk9vcQv-dH">
 
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -267,7 +266,6 @@ select {
 <body>
 <div class="card" id="mainCard">
 
-  <!-- HEADER -->
   <div class="card-head">
     <div class="head-inner">
       <div class="head-left">
@@ -284,7 +282,6 @@ select {
     </div>
   </div>
 
-  <!-- NAVY STRIP -->
   <div class="navy-strip">
     <div class="strip-label">Period</div>
     <div class="strip-val">April 2026</div>
@@ -294,22 +291,18 @@ select {
     <div class="strip-val" style="color:rgba(255,255,255,.5)">All fields <span style="color:#f87171">*</span> required</div>
   </div>
 
-  <!-- BODY -->
   <div class="card-body" id="cardBody">
 
-    <!-- Loading -->
     <div class="loading-wrap" id="loadingState">
       <div class="spinner"></div>
       Loading…
     </div>
 
-    <!-- STEP 1: Pick counselor -->
     <div id="stepPicker" style="display:none">
       <p style="color:var(--muted);font-size:.88rem;margin-bottom:14px;text-align:center;font-weight:500">Tap your name to get started</p>
       <div class="grid" id="counselorList"></div>
     </div>
 
-    <!-- STEP 2: Payment form -->
     <div id="stepForm" style="display:none">
 
       <div class="row-2">
@@ -347,7 +340,6 @@ select {
       </button>
     </div>
 
-    <!-- SUCCESS -->
     <div class="success-screen" id="successScreen">
       <div class="success-ring">
         <svg viewBox="0 0 24 24" fill="none" stroke="#d01c1c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -361,7 +353,6 @@ select {
   </div>
 </div>
 
-<!-- COUNSELOR PICKER (bottom sheet on mobile) -->
 <div class="picker-overlay" id="pickerOverlay">
   <div class="picker-modal">
     <div class="picker-head">
