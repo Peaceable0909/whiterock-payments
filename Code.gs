@@ -196,7 +196,7 @@ function setupSheet() {
       ["Robert"],
       ["Mr Abraham"],
       ["Cherish"],
-      ["Mrs Oluwo"]
+      ["Mrs Oluwo"],["Jason"],["Daniel"]
     ]);
   }
   SpreadsheetApp.getUi().alert("✅ Setup complete! Edit the Counselors tab to add/remove counselors.");
